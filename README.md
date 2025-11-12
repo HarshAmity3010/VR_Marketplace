@@ -44,79 +44,111 @@ VR_MarketPlace is a decentralized marketplace for VR assets built on the Interne
 
 1. Install DFX, Node.js, and npm (see ICP docs)
 2. Clone this repo and run `npm install` in the root and frontend folder
-3. Start the local replica: `dfx start --clean`
-4. Deploy canisters: `dfx deploy`
-5. Start the frontend: `npm run start --workspace VR_MarketPlace_frontend`
-6. Open the app at `http://localhost:3000` (or the port shown)
+```markdown
+# VR_MarketPlace
 
-## Canister Interface (Candid)
+## Project overview
 
-See `src/VR_MarketPlace_backend/VR_MarketPlace_backend.did` for the full service interface, including:
-- greet
-- create_asset
-- list_assets
-- buy_asset
-- list_for_sale
-- delete_asset
+VR_MarketPlace is a small, decentralized marketplace for VR assets built on the Internet Computer (IC). The backend is a Rust canister that stores asset records and enforces ownership; the frontend is a Vite + React app that integrates Internet Identity for passwordless login. This repo now includes a complete project report, diagram sources and exports, and helper scripts to generate a Word report and render diagrams.
+
+This README highlights the recent additions and how to use them.
+
+## New documentation & assets
+
+- `docs/VR_Marketplace_Report.md` — The full internship/project report (SIP-style) covering background, design, implementation, testing, and future scope.
+- `docs/VR_Marketplace_Report.docx` — A native Word (.docx) export of the report generated from the Markdown.
+- `docs/figures/` — Mermaid source files (.mmd) and rendered PNGs for architecture, sequences, class diagrams, UI screenshots, and more.
+
+## Helpful scripts (root package.json)
+
+The root package.json includes scripts to generate the report and render diagrams. From the repository root run:
+
+```bash
+# generate a simple HTML report from Markdown
+npm run export:report
+
+# generate a native Word document (docx) from the Markdown (uses the native docx builder)
+npm run export:docx
+
+# render diagrams (uses the Kroki remote renderer); requires internet access
+npm run export:diagrams
+
+# attempt local mermaid-cli rendering (requires mermaid-cli and system libs for headless Chromium)
+npm run export:diagrams:local
+```
+
+Notes:
+- `export:docx` uses `scripts/export-report-docx-native.mjs` and the `docx` package to build a Word document that embeds images found in `docs/figures/`.
+- `export:diagrams` posts Mermaid files to Kroki and saves PNGs to `docs/figures/`. This avoids needing headless Chromium on the host. The local command `export:diagrams:local` uses `mermaid-cli` and requires additional OS dependencies (headless Chromium libraries).
+
+## Dependencies for report/diagram scripts
+
+Install Node dependencies (root):
+
+```bash
+npm install
+```
+
+Key devDependencies used by the export scripts are already in `package.json`:
+- `marked` — Markdown tokenizer/renderer
+- `docx` — Native .docx generation
+- `@mermaid-js/mermaid-cli` (optional) — local rendering (needs OS libs)
+
+If you prefer not to install headless Chromium dependencies, use `npm run export:diagrams` (Kroki) which only needs network access.
+
+## Where to find diagrams and screenshots
+
+- `docs/figures/` contains both Mermaid source (`*.mmd`) and rendered PNGs (`*.png`) such as:
+  - `fig01_architecture.png`
+  - `class_diagram.png`
+  - `flow_login.png`
+  - `fig11_ui_grid.png`, `fig12_ui_create_form.png`, `fig13_ui_list_sort.png`, `fig14_ui_purchase_success.png`
+
+Drop new screenshots into `docs/figures/` and re-run `npm run export:docx` to embed them in the Word report.
+
+## Project structure (high level)
+
+- `src/VR_MarketPlace_backend/` — Rust canister implementation and `*.did` Candid interface
+- `src/VR_MarketPlace_frontend/` — Vite + React frontend
+- `docs/` — report Markdown, Word export, figures and sources
+- `scripts/` — helpers to export report and render diagrams
+
+## Development quick-start (IC local)
+
+```bash
+# start local replica
+dfx start --clean --background
+
+# deploy canisters
+dfx deploy
+
+# start frontend dev server (from frontend folder)
+cd src/VR_MarketPlace_frontend
+npm install
+npm run dev
+```
+
+You can then open the app at the port shown by Vite (usually http://localhost:5173).
+
+## Notes and troubleshooting
+
+- If `npm run export:diagrams:local` fails with Chromium errors (missing libs like `libasound.so.2`), use `npm run export:diagrams` (Kroki) or install the missing system packages.
+- If Word reports an error opening the generated `.docx`, try regenerating with `npm run export:docx` (the native exporter is designed to be robust). If problems persist, open `docs/VR_Marketplace_Report.md` for the source Markdown.
+
+## Contributing
+
+If you add diagrams, tests, or documentation, please:
+
+1. Place figures under `docs/figures/` (source `.mmd` plus `.png`).
+2. Update `docs/VR_Marketplace_Report.md` where necessary.
+3. Re-run `npm run export:docx` to refresh the Word export.
+
+## References and further reading
+
+- Internet Computer docs: https://internetcomputer.org/docs/current/
+- DFINITY examples and community resources: https://github.com/dfinity/examples
 
 ---
 
-Welcome to your new `VR_MarketPlace` project and to the Internet Computer development community. By default, creating a new project adds this README and some template files to your project directory. You can edit these template files to customize your project and to include your own code to speed up the development cycle.
-
-To get started, you might want to explore the project directory structure and the default configuration file. Working with this project in your development environment will not affect any production deployment or identity tokens.
-
-To learn more before you start working with `VR_MarketPlace`, see the following documentation available online:
-
-- [Quick Start](https://internetcomputer.org/docs/current/developer-docs/setup/deploy-locally)
-- [SDK Developer Tools](https://internetcomputer.org/docs/current/developer-docs/setup/install)
-- [Rust Canister Development Guide](https://internetcomputer.org/docs/current/developer-docs/backend/rust/)
-- [ic-cdk](https://docs.rs/ic-cdk)
-- [ic-cdk-macros](https://docs.rs/ic-cdk-macros)
-- [Candid Introduction](https://internetcomputer.org/docs/current/developer-docs/backend/candid/)
-
-If you want to start working on your project right away, you might want to try the following commands:
-
-```bash
-cd VR_MarketPlace/
-dfx help
-dfx canister --help
+This README was updated to reflect the report generation and diagram tooling added to the project. If you'd like, I can also add a small `CONTRIBUTING.md` or `docs/README-export.md` with step-by-step screenshots for running the export scripts.
 ```
-
-## Running the project locally
-
-If you want to test your project locally, you can use the following commands:
-
-```bash
-# Starts the replica, running in the background
-dfx start --clean
-
-# Deploys your canisters to the replica and generates your candid interface
-dfx deploy
-```
-
-Once the job completes, your application will be available at `http://localhost:4943?canisterId={asset_canister_id}`.
-
-If you have made changes to your backend canister, you can generate a new candid interface with
-
-```bash
-npm run generate
-```
-
-at any time. This is recommended before starting the frontend development server, and will be run automatically any time you run `dfx deploy`.
-
-If you are making frontend changes, you can start a development server with
-
-```bash
-npm start
-```
-
-Which will start a server at `http://localhost:8080`, proxying API requests to the replica at port 4943.
-
-### Note on frontend environment variables
-
-If you are hosting frontend code somewhere without using DFX, you may need to make one of the following adjustments to ensure your project does not fetch the root key in production:
-
-- set`DFX_NETWORK` to `ic` if you are using Webpack
-- use your own preferred method to replace `process.env.DFX_NETWORK` in the autogenerated declarations
-  - Setting `canisters -> {asset_canister_id} -> declarations -> env_override to a string` in `dfx.json` will replace `process.env.DFX_NETWORK` with the string in the autogenerated declarations
-- Write your own `createActor` constructor
