@@ -1,0 +1,15 @@
+%% Purchase Flow for Asset
+flowchart TD
+  A[User clicks Buy] --> B{Authenticated?}
+  B -- No --> B1[Show error: login required]
+  B -- Yes --> C[Call buy_asset]
+  C --> D{Asset exists?}
+  D -- No --> D1[Return Err: Asset not found]
+  D -- Yes --> E{For sale?}
+  E -- No --> E1[Return Err: Not for sale]
+  E -- Yes --> F{Owner is buyer?}
+  F -- No --> F1[Return Err: Already owner]
+  F -- Yes --> G[Transfer ownership to buyer]
+  G --> H[Set status to not for sale]
+  H --> I[Return Ok: Asset]
+  I --> J[UI: Success toast + refresh list]

@@ -1,0 +1,14 @@
+%% Login Flow using Internet Identity
+flowchart TD
+  A[User clicks Login] --> B[AuthClient.login]
+  B --> C{Network}
+  C -- local --> D[Open II at http://CANISTER.localhost:4943]
+  C -- ic --> E[Open II at https://identity.ic0.app]
+  D --> F[User verifies device / passkey]
+  E --> F[User verifies device / passkey]
+  F --> G[Identity returned]
+  G --> H[Create HttpAgent]
+  H --> I[Create Actor]
+  I --> J[Fetch root key if local]
+  J --> K[Set principal in UI]
+  K --> L[Authenticated actions enabled]

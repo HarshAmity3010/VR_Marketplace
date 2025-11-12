@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VR Marketplace Report</title>
+  <style>
+    :root { --fg: #1b1f23; --bg: #ffffff; --muted: #6a737d; --accent: #0ea5e9; }
+    html, body { padding: 0; margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Fira Sans', 'Droid Sans', 'Helvetica Neue', Arial, sans-serif; color: var(--fg); background: var(--bg); }
+    .container { max-width: 960px; margin: 2rem auto; padding: 0 1rem 4rem; }
+    h1, h2, h3, h4 { color: #0f172a; }
+    h1 { font-size: 2rem; margin-top: 1.5rem; }
+    h2 { font-size: 1.6rem; margin-top: 1.6rem; border-bottom: 2px solid #e2e8f0; padding-bottom: .25rem; }
+    h3 { font-size: 1.25rem; margin-top: 1.25rem; }
+    p { line-height: 1.6; }
+    code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace; }
+    pre { background: #0b1020; color: #e2e8f0; padding: 1rem; border-radius: 8px; overflow: auto; }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+    th, td { border: 1px solid #e2e8f0; padding: .5rem .6rem; text-align: left; }
+    th { background: #f8fafc; }
+    blockquote { color: #334155; border-left: 4px solid #cbd5e1; padding-left: .75rem; margin-left: 0; }
+    img { max-width: 100%; height: auto; border-radius: 6px; }
+    .title { font-size: 2.25rem; font-weight: 700; margin-bottom: .25rem; }
+    .meta { color: var(--muted); margin-bottom: 1.5rem; }
+    @media print {
+      .container { max-width: 100%; margin: 0; padding: 0; }
+      a { color: #000; }
+      pre { white-space: pre-wrap; word-wrap: break-word; }
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <h1>Decentralized VR Marketplace on the Internet Computer</h1>
+<p>Author: [Your Name] (Roll No.: [Your Roll No.])<br>Program: [Program, Semester 3]<br>Institute: [Institute Name]<br>Industry Mentor: [Mentor Name, Company]<br>Faculty Guide: [Guide Name, Department]<br>Duration: [Start Date – End Date]<br>Submission Date: [Date]</p>
+<hr>
+<h2>Certificate</h2>
+<p>This is to certify that the report titled “Decentralized VR Marketplace on the Internet Computer” submitted by [Your Name], Roll No. [Roll No.], under my supervision, is a bona fide record of the Summer Internship/Project Work carried out during [dates].</p>
+<ul>
+<li>Faculty Guide: [Name, Signature]</li>
+<li>Department: [Department Name], [Institute Name]</li>
+</ul>
+<h2>Declaration</h2>
+<p>I hereby declare that this project report is an original work carried out by me and has not been submitted elsewhere. All sources have been duly acknowledged.</p>
+<ul>
+<li>[Your Name]  </li>
+<li>Date: [Date]</li>
+</ul>
+<h2>Acknowledgement</h2>
+<p>I thank my industry mentor [Mentor Name], faculty guide [Guide Name], the [Institute Name], and the open-source communities behind DFINITY (Internet Computer), Rust, React, and Vite for their guidance and tooling.</p>
+<h2>Abstract</h2>
+<p>This project implements a decentralized marketplace for VR/3D assets on the Internet Computer (IC). Creators can list assets, and buyers can authenticate via Internet Identity to browse and purchase them. The backend is a Rust canister exposing a Candid API for listings and transactions; the frontend is a Vite/React application that integrates with Internet Identity. Emphasis is placed on decentralization, secure authorization, and a responsive user experience.</p>
+<p>In contrast to traditional web2 marketplaces, data and business logic here reside on-chain in an IC canister, and users authenticate without passwords using device-bound passkeys. The system demonstrates: (a) secure owner-only mutations, (b) transparent read APIs for public discovery, and (c) an end-to-end flow from authentication to asset purchase with state changes persisted on-chain.</p>
+<p>Contributions:</p>
+<ul>
+<li>A minimal yet complete VR asset marketplace architecture for the IC (Rust canister + Vite/React frontend).</li>
+<li>A clean, typed Candid API surface with meaningful error variants for client handling.</li>
+<li>A practical integration pattern for Internet Identity in a modern React app.</li>
+<li>A testing strategy spanning unit, component, and integration layers suitable for student projects.</li>
+</ul>
+<p>Success Criteria:</p>
+<ul>
+<li>Users can login via II and perform authorized actions reliably.</li>
+<li>Asset CRUD and purchase flows function consistently across fresh and repeated sessions.</li>
+<li>The UI remains responsive with clear feedback and reasonable latency on the local replica.</li>
+</ul>
+<p>Keywords: Internet Computer, Rust Canister, Candid, Internet Identity, Vite, React, Web3, Marketplace, VR Assets</p>
+<hr>
+<h2>Table of Contents</h2>
+<ul>
+<li>List of Figures  </li>
+<li>List of Tables  </li>
+<li>List of Abbreviations</li>
+</ul>
+<h2>List of Abbreviations</h2>
+<ul>
+<li>IC: Internet Computer  </li>
+<li>II: Internet Identity  </li>
+<li>DFX: DFINITY Tooling  </li>
+<li>UI: User Interface  </li>
+<li>NFR: Non-Functional Requirement  </li>
+<li>DID: Candid Interface Definition  </li>
+<li>UX: User Experience  </li>
+<li>CI/CD: Continuous Integration / Continuous Delivery</li>
+</ul>
+<hr>
+<h2>1. Introduction</h2>
+<h3>1.1 Background and Motivation</h3>
+<p>Centralized marketplaces for VR/digital assets introduce platform risks, opaque economics, and single points of failure. Decentralized infrastructure supports verifiable ownership and open APIs. The Internet Computer (IC) enables web-scale, on-chain applications with native web-serving canisters and privacy-preserving authentication via Internet Identity.</p>
+<p>From an academic perspective, this project illustrates socio-technical benefits of decentralization (censorship resistance, auditability) while exploring developer ergonomics of building a web app that is “mostly on-chain.” The IC’s ability to serve web assets directly from canisters reduces external dependencies and keeps the application boundary well-defined.</p>
+<h3>1.2 Problem Statement</h3>
+<p>Build a decentralized marketplace for VR/3D assets that:</p>
+<ul>
+<li>Provides passwordless authentication (II) without traditional accounts.</li>
+<li>Allows creators to list and manage assets with metadata and pricing.</li>
+<li>Lets buyers browse and purchase assets securely.</li>
+<li>Persists marketplace state on-chain with transparent APIs.</li>
+<li>Delivers a responsive, web-native UX.</li>
+</ul>
+<h3>1.3 Objectives</h3>
+<ul>
+<li>Implement Rust canister(s) with Candid APIs for asset CRUD and purchase flow.  </li>
+<li>Build a Vite/React frontend integrating Internet Identity and the canister API.  </li>
+<li>Enforce secure authorization and robust input validation.  </li>
+<li>Validate with unit, integration, and UI tests.</li>
+</ul>
+<h3>1.4 Research Questions</h3>
+<ul>
+<li>How effectively can II replace traditional account systems in a consumer-facing marketplace?</li>
+<li>What minimal API surface is sufficient to enable a coherent asset lifecycle (create → list → buy → relist/delete)?</li>
+<li>Which validations and authorization checks prevent the majority of user errors and misuse in v1?</li>
+</ul>
+<h3>1.4 Scope and Limitations</h3>
+<ul>
+<li>In scope: II login, asset CRUD, browsing, and basic purchase recording.  </li>
+<li>Out of scope (v1): On-chain payment settlement, large binary storage for 3D models, moderation tooling, advanced search/ranking.</li>
+</ul>
+<h3>1.5 Outcomes</h3>
+<ul>
+<li>Working dApp with coherent architecture and stable API.  </li>
+<li>Documented deployment and testing procedures; foundation for advanced features.</li>
+</ul>
+<h3>1.6 Success Metrics</h3>
+<ul>
+<li>Functional: ≥ 90% of core flows (login, create, list, buy, delete) complete successfully in local testing.</li>
+<li>UX: Users receive actionable feedback for errors within 1 second on average in local dev.</li>
+<li>Reliability: Re-running flows does not corrupt state (idempotent reads, guarded writes).</li>
+</ul>
+<hr>
+<h2>2. Literature Review and Related Work</h2>
+<ul>
+<li>Web3 marketplaces (e.g., NFT platforms) demonstrate decentralized ownership but often depend on off-chain components.  </li>
+<li>Internet Computer (IC): Canister smart contracts with stable, low-latency execution and web-serving capabilities.  </li>
+<li>Internet Identity (II): WebAuthn-based, privacy-preserving authentication with device-bound credentials.  </li>
+<li>Tradeoffs: On-chain vs. off-chain storage, standards like DIP-721 for NFTs, and UX complexity of cryptographic identities.</li>
+</ul>
+<p>[Figure 1: Comparative landscape of decentralized asset marketplaces — placeholder]</p>
+<p>References are listed in Section “References”.</p>
+<h3>2.1 Platform Comparison (Brief)</h3>
+<ul>
+<li>IC vs EVM Chains: The IC natively serves HTTP(S) from canisters and uses WebAuthn-based II; EVM chains typically need off-chain frontends and wallet extensions (e.g., MetaMask). IC can offer lower integration friction for web-native apps.</li>
+<li>IC vs Solana: Both target performance, but IC emphasizes web-serving and canister abstractions; Solana focuses on high-throughput L1 execution with different developer tooling and wallet paradigms.</li>
+</ul>
+<h3>2.2 Identity and Authentication</h3>
+<p>Internet Identity decouples user identity from typical seed phrases and passwords, instead using device-bound credentials backed by platform authenticators (e.g., TPM/Secure Enclave). This improves usability and reduces phishing risk.</p>
+<h3>2.3 Standards and Patterns</h3>
+<ul>
+<li>Candid (DID) enables language-agnostic interface definitions for canisters, simplifying client generation and testing.</li>
+<li>DIP-721 (IC NFT) and related proposals provide a blueprint for tokenized ownership. While this project models assets directly, future versions can adopt NFT standards for transferability and provenance.</li>
+</ul>
+<h3>2.4 Prior Art</h3>
+<p>Open-source IC projects and tutorials demonstrate common patterns for integrating II and calling canisters from web apps. This project synthesizes those patterns into a marketplace domain with CRUD, listing, and purchase flows.</p>
+<hr>
+<h2>3. System Analysis and Requirements</h2>
+<h3>3.1 Actors</h3>
+<ul>
+<li>Visitor: Unauthenticated user viewing public assets.  </li>
+<li>Authenticated User: Logged in via Internet Identity.  </li>
+<li>Creator/Seller: Authenticated user creating and managing assets.  </li>
+<li>Buyer: Authenticated user purchasing assets.</li>
+</ul>
+<h3>3.2 Functional Requirements (FR)</h3>
+<ul>
+<li>FR-1: Login/logout via Internet Identity (II).  </li>
+<li>FR-2: Create a new asset with name, description, price (₹), and image (base64).  </li>
+<li>FR-3: Update/delete own assets; delete restricted to owner.  </li>
+<li>FR-4: Browse and view assets (public).  </li>
+<li>FR-5: List an owned asset for sale and set price.  </li>
+<li>FR-6: Purchase an asset (records ownership transfer; payment stubbed in v1).</li>
+</ul>
+<h3>3.3 Non-Functional Requirements (NFR)</h3>
+<ul>
+<li>NFR-1: Security — authorization on mutations, input validation, least-privilege.  </li>
+<li>NFR-2: Performance — low-latency reads in dev; scalable patterns for prod.  </li>
+<li>NFR-3: Reliability — idempotent operations and coherent state.  </li>
+<li>NFR-4: Maintainability — clear API, typed data, tests, and modular code.  </li>
+<li>NFR-5: Usability — intuitive UI, helpful messages, and responsive layout.</li>
+</ul>
+<h3>3.4 Constraints and Assumptions</h3>
+<ul>
+<li>Constraints: On-chain storage is metered; large media stored off-chain or as data URLs (demo).  </li>
+<li>Assumptions: Payments are simulated; II is accepted by users.</li>
+</ul>
+<h3>3.5 Use Cases</h3>
+<ul>
+<li>UC-1: Login with II  </li>
+<li>UC-2: Create asset  </li>
+<li>UC-3: Browse assets  </li>
+<li>UC-4: View asset details  </li>
+<li>UC-5: Purchase asset  </li>
+<li>UC-6: Manage user’s assets (list for sale, delete)</li>
+</ul>
+<p>[Figure 2: Use Case Diagram — placeholder]</p>
+<h3>3.6 User Stories (Illustrative)</h3>
+<ul>
+<li>As a creator, I want to list my VR asset with a price so that buyers can discover and purchase it.</li>
+<li>As an owner, I want to update the sale price and toggle availability so that I can control resale.</li>
+<li>As a buyer, I want to sign in with my device (no passwords) so that I can purchase quickly and safely.</li>
+<li>As a visitor, I want to browse assets without logging in so that I can evaluate the marketplace.</li>
+</ul>
+<h3>3.7 Acceptance Criteria</h3>
+<ul>
+<li>Login shows the principal ID and exposes owner-only actions when authenticated.</li>
+<li>Creating a valid asset returns an object with id, owner=caller, and for_sale=true.</li>
+<li>Non-owners cannot delete or relist someone else’s asset.</li>
+<li>Attempting to buy a non-sale or already-owned asset yields a clear error message.</li>
+</ul>
+<h3>3.8 Data Dictionary (Key Fields)</h3>
+<ul>
+<li>id (nat64): Monotonically increasing identifier for assets.</li>
+<li>price (nat64): Integer rupee amount; must be ≥ 0.</li>
+<li>owner/creator (principal): IC principals recorded for authorization and attribution.</li>
+<li>image (text): Base64-encoded data URL in v1; future: URL/IPFS CID.</li>
+</ul>
+<hr>
+<h2>4. System Design</h2>
+<h3>4.1 High-Level Architecture</h3>
+<ul>
+<li>Frontend (Vite/React): UI, state, and canister agent calls; II login flow via <code>@dfinity/auth-client</code>.  </li>
+<li>Backend (Rust Canister): Business logic for assets and purchases; Candid interface for interop.  </li>
+<li>Internet Identity: Authentication and principal management.  </li>
+<li>Storage: Demo uses base64 image strings; future versions to use IPFS/IC-certified assets.</li>
+</ul>
+<p>[Figure 3: Architecture Diagram — Browser ↔ React (Vite) ↔ Agent ↔ IC Canister(s), II — placeholder]</p>
+<h3>4.2 Data Model</h3>
+<p>Entity: Asset</p>
+<ul>
+<li>id: nat64  </li>
+<li>name: text  </li>
+<li>description: text  </li>
+<li>creator: principal  </li>
+<li>owner: principal  </li>
+<li>price: nat64 (₹ Rupees)  </li>
+<li>for_sale: bool  </li>
+<li>image: text (base64 data URL)</li>
+</ul>
+<p>[Figure 4: Class Diagram for Asset — placeholder]</p>
+<h3>4.3 Candid API (As Implemented)</h3>
+<p>From <code>src/VR_MarketPlace_backend/VR_MarketPlace_backend.did</code>:</p>
+<ul>
+<li>greet(text) -&gt; text (query)  </li>
+<li>create_asset(text, text, nat64, text) -&gt; Asset  </li>
+<li>list_assets() -&gt; vec Asset (query)  </li>
+<li>buy_asset(nat64) -&gt; variant { Ok: Asset; Err: text }  </li>
+<li>list_for_sale(nat64, nat64) -&gt; variant { Ok: Asset; Err: text }  </li>
+<li>delete_asset(nat64) -&gt; variant { Ok: null; Err: text }</li>
+</ul>
+<p>Notes:</p>
+<ul>
+<li>The backend also contains a development-only function <code>delete_all_assets()</code> guarded by a warning comment in <code>lib.rs</code>. It should be restricted or removed in production.</li>
+</ul>
+<p>[Figure 5: API Endpoints Map — placeholder]</p>
+<h3>4.4 Security and Authorization</h3>
+<ul>
+<li>Authentication: Internet Identity provides a principal used by the agent for signed calls.  </li>
+<li>Authorization:  <ul>
+<li>delete_asset: allowed only for the current owner.  </li>
+<li>list_for_sale: allowed only for the current owner.  </li>
+<li>buy_asset: disallowed if buyer already owns or asset not for sale.</li>
+</ul>
+</li>
+<li>Input Validation: Non-negative pricing, required text fields, and reasonable length limits (enforced in UI; can extend in canister).  </li>
+<li>Dev Footgun: <code>delete_all_assets</code> must be disabled or admin-guarded outside development.</li>
+</ul>
+<h3>4.5 Sequence Diagrams (Narrative)</h3>
+<ul>
+<li>Create Asset: User → II → React → canister.create_asset → persist in map → return Asset.  </li>
+<li>Purchase Asset: User → II → React → canister.buy_asset → validate for_sale and ownership → update owner + mark not for sale → return Asset.</li>
+</ul>
+<p>[Figure 6: Sequence — Purchase flow — placeholder]</p>
+<h3>4.6 Error Model and Versioning</h3>
+<ul>
+<li>Error variants (text in v1) convey causes like NotAuthorized, NotFound, InvalidState. A future version can adopt a structured enum in DID for better client ergonomics.</li>
+<li>API Versioning: Prefix method names or embed a <code>service v1 : { ... }</code> to allow additive evolution without breaking clients.</li>
+</ul>
+<h3>4.7 Performance Considerations</h3>
+<ul>
+<li>Lookup and insert operations on <code>HashMap</code> are expected average-case $O(1)$. Thus, for $n$ assets the expected read time is approximately constant: $T_{read}(n) \approx c$.</li>
+<li>End-to-end latency is dominated by network round-trip and replica execution time: $T_{e2e} \approx T_{network} + T_{replica} + T_{render}$.</li>
+</ul>
+<h3>4.8 Upgrade and Persistence Strategy</h3>
+<ul>
+<li>Current MVP stores data in thread-local memory without explicit stable memory migration. Upgrades may reset state in v1.</li>
+<li>Future: adopt stable structures (e.g., <code>ic-stable-structures</code>) and implement <code>pre_upgrade</code>/<code>post_upgrade</code> hooks to persist and restore state across upgrades.</li>
+</ul>
+<hr>
+<h2>5. Implementation Details</h2>
+<h3>5.1 Tech Stack</h3>
+<ul>
+<li>Frontend: React (Vite), SCSS, basic component tests (Jest/RTL).  </li>
+<li>Backend: Rust canister with <code>ic-cdk</code>, Candid interface.  </li>
+<li>Tooling: <code>dfx</code>, TypeScript config, and Vite build config.  </li>
+<li>Auth: Internet Identity via <code>@dfinity/auth-client</code> and <code>@dfinity/agent</code>.</li>
+</ul>
+<h3>5.2 Repository Structure</h3>
+<ul>
+<li><code>dfx.json</code> — canister configs (backend rust canister, frontend assets canister, Internet Identity reference).  </li>
+<li><code>src/VR_MarketPlace_backend/</code> — Rust canister; <code>src/lib.rs</code>, <code>VR_MarketPlace_backend.did</code>.  </li>
+<li><code>src/VR_MarketPlace_frontend/</code> — Vite/React app (<code>App.jsx</code>, <code>main.jsx</code>, styles).  </li>
+<li><code>src/declarations/</code> — generated bindings for canisters.</li>
+</ul>
+<h3>5.3 Frontend (Key Features)</h3>
+<ul>
+<li>II Login/Logout: Auth state managed via <code>AuthClient</code>; principals displayed compactly.</li>
+<li>Asset Creation: Form fields for name, description, price (₹), and image file to base64.  </li>
+<li>Marketplace Views: Grid/List toggle, simple sorting by price and recency.  </li>
+<li>Actions:  <ul>
+<li>Buy (if for sale and not owned).  </li>
+<li>List for Sale (owner only, prompts for price).  </li>
+<li>Delete (owner only).</li>
+</ul>
+</li>
+<li>Error/Success Messages: User-friendly feedback and loading indicators.  </li>
+<li>Dev: Uses <code>agent.fetchRootKey()</code> when <code>VITE_DFX_NETWORK=local</code>.</li>
+</ul>
+<h4>5.3.1 State Management and Patterns</h4>
+<ul>
+<li>React hooks manage local component state; derived views (sorted assets) avoid re-computation by referencing existing arrays.</li>
+<li>Auth state (principal) gates privileged actions; anonymous actors can still read via <code>list_assets</code>.</li>
+<li>Defensive UI: Buttons disabled during in-flight mutations to prevent duplicate submissions.</li>
+</ul>
+<h4>5.3.2 Validation and UX Details</h4>
+<ul>
+<li>Input constraints: name/description required, non-negative integer price; browser-native validation plus runtime checks for price parsing.</li>
+<li>Image handling: FileReader converts images to base64 data URLs for demo; in production, prefer uploads to content-addressed storage.</li>
+</ul>
+<h3>5.4 Backend (Rust Canister)</h3>
+<ul>
+<li>Data: <code>HashMap&lt;u64, Asset&gt;</code> with <code>NEXT_ASSET_ID</code> for sequential IDs.  </li>
+<li>Functions:  <ul>
+<li><code>create_asset(name, description, price_rupees, image) -&gt; Asset</code>  </li>
+<li><code>list_assets() -&gt; Vec&lt;Asset&gt;</code> (query)  </li>
+<li><code>buy_asset(asset_id) -&gt; Result&lt;Asset, String&gt;</code>  </li>
+<li><code>list_for_sale(asset_id, price_rupees) -&gt; Result&lt;Asset, String&gt;</code>  </li>
+<li><code>delete_asset(asset_id) -&gt; Result&lt;(), String&gt;</code>  </li>
+<li><code>greet(name) -&gt; String</code> (query)  </li>
+<li>Dev-only: <code>delete_all_assets() -&gt; Result&lt;(), String&gt;</code></li>
+</ul>
+</li>
+<li>Authorization implemented via <code>ic_cdk::api::caller()</code> principal comparisons.</li>
+<li>Payment is stubbed; ownership transfers without token settlement (v1).</li>
+</ul>
+<h4>5.4.1 Design Decisions</h4>
+<ul>
+<li>Simplicity-first: a single <code>Asset</code> type and a <code>HashMap</code> keyed by <code>id</code> minimize moving parts while illustrating core patterns.</li>
+<li>Authorization-by-ownership: mutation endpoints compare <code>caller()</code> with <code>owner</code> to enforce access control.</li>
+</ul>
+<h4>5.4.2 Complexity Notes</h4>
+<ul>
+<li><code>create_asset</code>: amortized $O(1)$ insert; ID generation is constant time.</li>
+<li><code>list_assets</code>: $O(n)$ copy when returning all assets; acceptable for small $n$ in MVP.</li>
+<li><code>buy_asset</code>, <code>list_for_sale</code>, <code>delete_asset</code>: $O(1)$ expected lookup and mutation.</li>
+</ul>
+<h3>5.5 Error Handling and Logging</h3>
+<ul>
+<li>Typed results with variant responses in Candid.  </li>
+<li>Frontend interprets <code>{ Ok: T } | { Err: text }</code> and displays messages.  </li>
+<li>Logging: Add <code>ic_cdk::println!()</code> in dev if deeper tracing is needed.</li>
+</ul>
+<h3>5.6 Configuration</h3>
+<ul>
+<li><code>dfx.json</code>:  <ul>
+<li>Backend rust canister (<code>VR_MarketPlace_backend</code>).  </li>
+<li>Frontend assets canister serves built <code>dist/</code>.  </li>
+<li>Internet Identity configured with remote <code>ic</code> canister id and dev wasm.</li>
+</ul>
+</li>
+</ul>
+<p>[Figure 7: Deployment topology — placeholder]</p>
+<h3>5.7 Upgrade Path</h3>
+<ul>
+<li>Introduce <code>pre_upgrade</code> and <code>post_upgrade</code> to serialize/deserialize state.</li>
+<li>Add structured error enums in DID and map Rust errors precisely.</li>
+<li>Split read-heavy functionality to a separate canister if scaling demands arise.</li>
+</ul>
+<hr>
+<h2>6. Testing and Validation</h2>
+<h3>6.1 Strategy</h3>
+<ul>
+<li>Backend Unit Tests: CRUD and authorization checks for owner-only actions.  </li>
+<li>Frontend Component Tests: Render list/grid, form validation, and conditional buttons by ownership/auth.  </li>
+<li>Integration: Local replica with <code>dfx</code>; E2E flow for login → create → list → buy → relist/delete.</li>
+</ul>
+<h3>6.2 Sample Test Cases</h3>
+<p>Table: Backend tests</p>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Scenario</th>
+<th>Steps</th>
+<th>Expected</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>TC-BE-01</td>
+<td>Create valid asset</td>
+<td>call create_asset</td>
+<td>returns Asset with id, owner=caller, for_sale=true</td>
+</tr>
+<tr>
+<td>TC-BE-02</td>
+<td>Buy not for sale</td>
+<td>set for_sale=false then buy</td>
+<td>Err(&quot;Asset is not for sale&quot;)</td>
+</tr>
+<tr>
+<td>TC-BE-03</td>
+<td>Double-own</td>
+<td>owner calls buy</td>
+<td>Err(&quot;You already own this asset&quot;)</td>
+</tr>
+<tr>
+<td>TC-BE-04</td>
+<td>Delete by non-owner</td>
+<td>other principal delete</td>
+<td>Err(&quot;Only the owner can delete the asset&quot;)</td>
+</tr>
+<tr>
+<td>TC-BE-05</td>
+<td>List for sale by non-owner</td>
+<td>other principal</td>
+<td>Err(&quot;Only the owner can list the asset for sale&quot;)</td>
+</tr>
+</tbody></table>
+<p>Table: Frontend tests</p>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Scenario</th>
+<th>Steps</th>
+<th>Expected</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>TC-FE-01</td>
+<td>Render empty list</td>
+<td>load, no assets</td>
+<td>Shows &quot;No assets found.&quot;</td>
+</tr>
+<tr>
+<td>TC-FE-02</td>
+<td>Create asset form</td>
+<td>fill fields, submit</td>
+<td>Success message; list updates</td>
+</tr>
+<tr>
+<td>TC-FE-03</td>
+<td>Ownership actions</td>
+<td>view owned asset</td>
+<td>Shows List for Sale and Delete buttons</td>
+</tr>
+<tr>
+<td>TC-FE-04</td>
+<td>Buy flow unauthenticated</td>
+<td>click Buy when logged out</td>
+<td>Error: must be logged in</td>
+</tr>
+<tr>
+<td>TC-FE-05</td>
+<td>Sorting</td>
+<td>choose Price High-Low</td>
+<td>List sorted descending by price</td>
+</tr>
+</tbody></table>
+<h3>6.3 Test Environment</h3>
+<ul>
+<li>Local IC replica (dfx) and Vite dev server.  </li>
+<li>Jest/React Testing Library for UI components (optional).</li>
+</ul>
+<h3>6.4 Results Summary</h3>
+<ul>
+<li>Provide a table per run with Pass/Fail and notes; include screenshots/logs in Annexure D/C.</li>
+</ul>
+<p>[Table 1: Test Results Summary — placeholder]</p>
+<h3>6.5 Coverage Goals</h3>
+<ul>
+<li>Backend: Cover all mutation branches (owner vs non-owner, sale vs non-sale). Target ≥ 80% line coverage for <code>lib.rs</code>.</li>
+<li>Frontend: Cover critical interactions (submit, buy, list, delete) and empty/error states.</li>
+</ul>
+<h3>6.6 E2E Flow (Manual Template)</h3>
+<ol>
+<li>Start replica and deploy canisters.  </li>
+<li>Open the app, confirm anonymous fetch of <code>list_assets</code> works.  </li>
+<li>Login with II; note principal displayed.  </li>
+<li>Create an asset; verify it appears with you as owner and for_sale=true.  </li>
+<li>Logout; login with a different anchor (or in private window) and buy the asset; verify owner updates and for_sale=false.  </li>
+<li>As the new owner, list the asset for sale at a new price, then delete it; verify errors when non-owners attempt the same.</li>
+</ol>
+<h3>6.7 Test Data and Fixtures</h3>
+<ul>
+<li>Valid names/descriptions (length ≤ 100 chars).  </li>
+<li>Prices: {0, 1, 10^6} to test boundaries.  </li>
+<li>Images: small PNG/JPEG data URLs; include a case without image.</li>
+</ul>
+<hr>
+<h2>7. Deployment and DevOps</h2>
+<h3>7.1 Local Development</h3>
+<ul>
+<li>Run IC replica and deploy canisters. Serve frontend via Vite in development mode.  </li>
+<li>Use Candid UI for ad-hoc endpoint checks.</li>
+</ul>
+<h3>7.2 Release Packaging</h3>
+<ul>
+<li>Build frontend to <code>dist/</code> and deploy as assets canister.  </li>
+<li>Manage cycles for production deployments and monitor usage.</li>
+</ul>
+<h3>7.3 Observability</h3>
+<ul>
+<li>Logs via <code>dfx</code> replica output for backend events; integrate structured logs if needed.</li>
+</ul>
+<h3>7.4 Versioning and CI</h3>
+<ul>
+<li>Tag releases in Git; add CI for lint/test/build pipelines as future improvement.</li>
+</ul>
+<h3>7.5 Environments</h3>
+<ul>
+<li>Local: <code>dfx start</code> with Internet Identity dev canister; Vite dev server for hot reload.  </li>
+<li>Staging (future): Hosted replica and canister deployment with seeded test data.  </li>
+<li>Production (future): Cycles-managed deployment with monitoring and access controls.</li>
+</ul>
+<h3>7.6 Ops Runbook (Summary)</h3>
+<ul>
+<li>Health: Verify canister status and Candid UI responsiveness.  </li>
+<li>Incidents: Roll back to previous tag or redeploy canister after state backup.  </li>
+<li>Keys &amp; Access: Enforce principle of least privilege for deployment identities.</li>
+</ul>
+<hr>
+<h2>8. Results and Discussion</h2>
+<h3>8.1 Achieved Features</h3>
+<ul>
+<li>II-based login/logout integrated with React UI.  </li>
+<li>Asset CRUD and browsing via Rust canister.  </li>
+<li>Purchase flow with ownership transfer and state updates.</li>
+</ul>
+<h3>8.2 Performance and UX</h3>
+<ul>
+<li>Responsive UI with grid/list toggles and sorting.  </li>
+<li>Low-latency queries on local replica; production behavior depends on canister topology and network.</li>
+</ul>
+<h3>8.3 Limitations</h3>
+<ul>
+<li>Payments are simulated; image storage via base64 data URLs; no moderation or advanced discovery yet.</li>
+</ul>
+<h3>8.4 Risk Analysis</h3>
+<ul>
+<li>Security: Owner-check bypass is mitigated by <code>caller()</code> equality checks; still, consider defense-in-depth (input limits, structured errors).</li>
+<li>Availability: Single canister MVP; future sharding or replication for scale/fault tolerance.</li>
+<li>Data Loss: Without stable memory, upgrades may reset state; mitigate via backups or stable structures.</li>
+</ul>
+<hr>
+<h2>9. Future Scope</h2>
+<ul>
+<li>Payments: Integrate ICP/ckBTC; escrow/settlement logic; align with DIP-20/ledger.  </li>
+<li>NFTization: Model assets as NFTs (DIP-721) and incorporate transfers/royalties.  </li>
+<li>Storage: IPFS or IC-certified assets for large files with integrity proofs.  </li>
+<li>Discovery: Search, tags, categories, and recommendation logic.  </li>
+<li>Moderation: Reporting, review tools, and policy enforcement.  </li>
+<li>UX: VR previews, AR/3D viewers, and mobile-first improvements.  </li>
+<li>Scalability: Multi-canister sharding, pagination, and caching strategies.</li>
+</ul>
+<h3>9.1 Roadmap (Proposed Phases)</h3>
+<ul>
+<li>Phase 1.1: Stable memory integration and upgrade-safe persistence.  </li>
+<li>Phase 1.2: Structured error enums in DID, input validation in canister.  </li>
+<li>Phase 2.0: Payments (ICP/ckBTC) and escrow logic.  </li>
+<li>Phase 2.1: NFT minting (DIP-721) for assets; provenance tracking.  </li>
+<li>Phase 3.0: Discovery features (search, tags), moderation tools, analytics dashboards.</li>
+</ul>
+<hr>
+<h2>10. Conclusion</h2>
+<p>A decentralized VR marketplace is feasible on the Internet Computer using a Rust canister backend and a Vite/React frontend. Internet Identity enables secure, passwordless authentication. Version 1 validates core flows—auth, asset creation, browsing, purchase, and owner-only actions—setting a strong foundation for production features like payments, NFT standards, and scalable storage.</p>
+<hr>
+<h2>References</h2>
+<ul>
+<li>DFINITY Foundation. Internet Computer Documentation. <a href="https://internetcomputer.org/docs/current/">https://internetcomputer.org/docs/current/</a>  </li>
+<li>Candid Interface Description Language. <a href="https://internetcomputer.org/docs/current/references/candid-ref">https://internetcomputer.org/docs/current/references/candid-ref</a>  </li>
+<li>Internet Identity. <a href="https://identity.ic0.app/">https://identity.ic0.app/</a>  </li>
+<li>Rust Programming Language. <a href="https://www.rust-lang.org/">https://www.rust-lang.org/</a>  </li>
+<li>React Documentation. <a href="https://react.dev/">https://react.dev/</a>  </li>
+<li>Vite Documentation. <a href="https://vitejs.dev/">https://vitejs.dev/</a></li>
+</ul>
+<p>Additional resources:</p>
+<ul>
+<li>ic-cdk Rust crate docs. <a href="https://docs.rs/ic-cdk/latest/ic_cdk/">https://docs.rs/ic-cdk/latest/ic_cdk/</a></li>
+<li>agent-js (DFINITY JavaScript agent). <a href="https://github.com/dfinity/agent-js">https://github.com/dfinity/agent-js</a></li>
+<li>Internet Computer Sample Projects. <a href="https://github.com/dfinity/examples">https://github.com/dfinity/examples</a></li>
+</ul>
+<hr>
+<h2>Annexures</h2>
+<h3>Annexure A: Requirements Traceability Matrix (RTM)</h3>
+<table>
+<thead>
+<tr>
+<th>Req ID</th>
+<th>Requirement</th>
+<th>Design Element</th>
+<th>Implementation</th>
+<th>Test Case IDs</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>FR-1</td>
+<td>II Login/Logout</td>
+<td>Frontend Auth Flow</td>
+<td><code>App.jsx</code> (AuthClient)</td>
+<td>TC-FE-04</td>
+</tr>
+<tr>
+<td>FR-2</td>
+<td>Create Asset</td>
+<td>Asset form + canister API</td>
+<td><code>create_asset</code> in <code>lib.rs</code></td>
+<td>TC-BE-01, TC-FE-02</td>
+</tr>
+<tr>
+<td>FR-3</td>
+<td>Update/Delete Own</td>
+<td>Owner auth checks</td>
+<td><code>delete_asset</code>, ownership compare</td>
+<td>TC-BE-04</td>
+</tr>
+<tr>
+<td>FR-4</td>
+<td>Browse Assets</td>
+<td>list view/grid</td>
+<td><code>list_assets</code></td>
+<td>TC-FE-01</td>
+</tr>
+<tr>
+<td>FR-5</td>
+<td>List For Sale</td>
+<td>owner-only control</td>
+<td><code>list_for_sale</code></td>
+<td>TC-BE-05</td>
+</tr>
+<tr>
+<td>FR-6</td>
+<td>Purchase Asset</td>
+<td>ownership transfer</td>
+<td><code>buy_asset</code></td>
+<td>TC-BE-02, TC-BE-03</td>
+</tr>
+</tbody></table>
+<h3>Annexure B: API Details</h3>
+<ul>
+<li>greet(name: text) -&gt; text (query)  <ul>
+<li>Returns a greeting string; used for connectivity checks.</li>
+</ul>
+</li>
+<li>create_asset(name, description, price_rupees, image: text) -&gt; Asset  <ul>
+<li>Creates an asset owned by caller; sets <code>for_sale=true</code>.</li>
+</ul>
+</li>
+<li>list_assets() -&gt; vec Asset (query)  <ul>
+<li>Returns all assets.</li>
+</ul>
+</li>
+<li>buy_asset(asset_id: nat64) -&gt; { Ok: Asset | Err: text }  <ul>
+<li>Transfers ownership if <code>for_sale=true</code> and caller != owner.</li>
+</ul>
+</li>
+<li>list_for_sale(asset_id: nat64, price_rupees: nat64) -&gt; { Ok: Asset | Err: text }  <ul>
+<li>Owner-only; sets price and <code>for_sale=true</code>.</li>
+</ul>
+</li>
+<li>delete_asset(asset_id: nat64) -&gt; { Ok: null | Err: text }  <ul>
+<li>Owner-only; removes the asset.</li>
+</ul>
+</li>
+<li>Dev-only (not in DID): delete_all_assets() -&gt; { Ok: null | Err: text }  <ul>
+<li>Use only in dev; restrict or remove in prod.</li>
+</ul>
+</li>
+</ul>
+<h3>Annexure C: Detailed Test Cases (Template)</h3>
+<p>For each test, include: Preconditions, Steps, Expected Result, Actual Result, Evidence (log/screenshot).</p>
+<ul>
+<li>TC-BE-01: Create Valid Asset  <ul>
+<li>Pre: Authenticated caller.  </li>
+<li>Steps: Call create_asset with valid fields.  </li>
+<li>Expected: Asset returned with id&gt;0, owner=caller, for_sale=true.</li>
+</ul>
+</li>
+</ul>
+<p>[Add more detailed cases per table in Section 6.2]</p>
+<p>Template (fill for each case):</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Test ID</td>
+<td>TC-...</td>
+</tr>
+<tr>
+<td>Purpose</td>
+<td>...</td>
+</tr>
+<tr>
+<td>Preconditions</td>
+<td>...</td>
+</tr>
+<tr>
+<td>Steps</td>
+<td>1) ... 2) ...</td>
+</tr>
+<tr>
+<td>Expected</td>
+<td>...</td>
+</tr>
+<tr>
+<td>Actual</td>
+<td>...</td>
+</tr>
+<tr>
+<td>Evidence</td>
+<td>screenshot/log ref</td>
+</tr>
+</tbody></table>
+<h3>Annexure D: Screenshots (Placeholders)</h3>
+<ul>
+<li>D-1: Login screen (Internet Identity) — <code>figures/login.png</code>  </li>
+<li>D-2: Listings grid — <code>figures/listings-grid.png</code>  </li>
+<li>D-3: Create asset form — <code>figures/create-form.png</code>  </li>
+<li>D-4: Listing detail / actions — <code>figures/listing-detail.png</code>  </li>
+<li>D-5: Purchase success — <code>figures/purchase-success.png</code>  </li>
+<li>D-6: Candid UI calls — <code>figures/candid-ui.png</code></li>
+</ul>
+<h3>Annexure E: Glossary</h3>
+<ul>
+<li>Principal: Unique identity on the IC used to authorize calls.  </li>
+<li>Canister: Smart contract/service unit on the IC.  </li>
+<li>Candid: Interface description language for canister APIs.  </li>
+<li>Cycles: Resource metering unit for computation/storage on the IC.  </li>
+<li>DIP-721: NFT standard proposal for the IC.</li>
+</ul>
+<h3>Annexure F: Project Timeline (Template)</h3>
+<table>
+<thead>
+<tr>
+<th>Week</th>
+<th>Milestone</th>
+<th>Outcome</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>Environment Setup</td>
+<td>dfx, Vite bootstrapped</td>
+</tr>
+<tr>
+<td>2</td>
+<td>II Auth</td>
+<td>Login/logout flow</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Asset CRUD</td>
+<td>Create/list/delete</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Purchase Flow</td>
+<td>Ownership transfer</td>
+</tr>
+<tr>
+<td>5</td>
+<td>UI Polish</td>
+<td>Grid/list, sorting</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Testing &amp; Report</td>
+<td>Test cases, documentation</td>
+</tr>
+</tbody></table>
+<h3>Annexure G: File Inventory</h3>
+<ul>
+<li><code>dfx.json</code>: Canister configurations and environment.  </li>
+<li><code>src/VR_MarketPlace_backend/src/lib.rs</code>: Rust canister logic.  </li>
+<li><code>src/VR_MarketPlace_backend/VR_MarketPlace_backend.did</code>: Candid interface.  </li>
+<li><code>src/VR_MarketPlace_frontend/src/App.jsx</code>: React UI logic and agent integration.  </li>
+<li><code>src/declarations/…</code>: Generated JS/TS bindings for canisters.</li>
+</ul>
+<hr>
+<h2>How to Customize and Export</h2>
+<ul>
+<li>Replace placeholders: names, dates, roll number, institute, mentors.  </li>
+<li>Drop screenshots into <code>docs/figures/</code> and update Annexure D paths.  </li>
+<li>Optional PDF export (using Pandoc or VS Code extensions).  </li>
+<li>If your implementation diverges (e.g., added filters, pagination, or payments), update Sections 4–6 and Annexures accordingly.</li>
+</ul>
+<p>Optional PDF export with headless Chrome (documentation-only):</p>
+<ul>
+<li>Open <code>docs/VR_Marketplace_Report.html</code> in a browser and print to PDF, or use a headless tool (e.g., Puppeteer) to automate printing.</li>
+</ul>
+
+  </main>
+</body>
+</html>

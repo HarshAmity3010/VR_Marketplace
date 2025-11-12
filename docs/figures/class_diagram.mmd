@@ -1,0 +1,23 @@
+%% Class Diagram for VR Marketplace (MVP)
+classDiagram
+  class VR_MarketPlace_Backend {
+    +greet(name: text) text
+    +create_asset(name: text, description: text, price_rupees: nat64, image: text) Asset
+    +list_assets() Vec~Asset~
+    +buy_asset(asset_id: nat64) Result~Asset,text~
+    +list_for_sale(asset_id: nat64, price_rupees: nat64) Result~Asset,text~
+    +delete_asset(asset_id: nat64) Result~void,text~
+  }
+
+  class Asset {
+    +id: nat64
+    +name: text
+    +description: text
+    +creator: principal
+    +owner: principal
+    +price: nat64
+    +for_sale: bool
+    +image: text
+  }
+
+  VR_MarketPlace_Backend --> Asset : uses

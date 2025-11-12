@@ -1,0 +1,23 @@
+%% Component / Module Diagram
+flowchart TB
+  subgraph Frontend
+    App[App.jsx]
+    Form[AssetForm]
+    Market[MarketplaceList]
+    Auth[Auth Client]
+  end
+  subgraph Declarations
+    Decl[Generated Declarations]
+  end
+  subgraph Backend
+    Can[VR_MarketPlace_backend]
+  end
+
+  App --> Form
+  App --> Market
+  App --> Auth
+  App --> Decl
+  Decl --> Can
+  Auth --> Can
+  Market --> Can
+  Form --> Can

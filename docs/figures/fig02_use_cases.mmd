@@ -1,0 +1,14 @@
+%% Use Case Diagram (simplified)
+flowchart TB
+  Visitor --> Browse[Browse Assets]
+  User[Authenticated User] --> Purchase[Purchase Asset]
+  Creator[Creator / Seller] --> Create[Create Asset]
+  Creator --> ListForSale[List For Sale]
+  Owner[Owner] --> Delete[Delete Asset]
+  %% Public reads
+  Browse -->|uses| Canister[(Canister API)]
+  %% Mutations require auth
+  Create -->|uses| Canister
+  ListForSale -->|uses| Canister
+  Delete -->|uses| Canister
+  Purchase -->|uses| Canister

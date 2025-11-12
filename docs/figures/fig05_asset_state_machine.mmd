@@ -1,0 +1,8 @@
+%% Asset State Machine
+stateDiagram-v2
+  [*] --> Created
+  Created --> ForSale: list for sale
+  ForSale --> Sold: buy
+  Sold --> ForSale: relist
+  ForSale --> Deleted: delete
+  Sold --> Deleted: delete

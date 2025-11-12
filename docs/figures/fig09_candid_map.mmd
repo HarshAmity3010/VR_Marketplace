@@ -1,0 +1,14 @@
+%% Candid API Map
+flowchart LR
+  subgraph Read
+    greet
+    list_assets
+  end
+  subgraph Write
+    create_asset
+    buy_asset
+    list_for_sale
+    delete_asset
+  end
+  Read --> Can[(VR_MarketPlace_backend)]
+  Write --> Can

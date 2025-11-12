@@ -1,0 +1,12 @@
+%% Data Model (MVP)
+classDiagram
+  class Asset {
+    +id: nat64
+    +name: text
+    +description: text
+    +creator: principal
+    +owner: principal
+    +price: nat64
+    +for_sale: bool
+    +image: text
+  }

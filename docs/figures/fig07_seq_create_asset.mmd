@@ -1,0 +1,12 @@
+%% Sequence: Create Asset
+sequenceDiagram
+  participant U as User
+  participant UI as Frontend
+  participant A as Agent
+  participant C as Canister
+  U->>UI: Submit asset form
+  UI->>A: Create actor
+  A->>C: create_asset
+  C-->>A: Asset
+  A-->>UI: Asset
+  UI-->>U: Success message

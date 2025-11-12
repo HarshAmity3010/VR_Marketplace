@@ -1,0 +1,7 @@
+%% System Architecture Overview
+flowchart LR
+  Browser[Web Browser] --> Frontend[React Vite]
+  Frontend --> Agent[DFINITY Agent]
+  Agent --> Canister[IC Canister: VR_MarketPlace_backend]
+  Frontend --> II[Internet Identity]
+  Canister --> State[(On-chain State)]

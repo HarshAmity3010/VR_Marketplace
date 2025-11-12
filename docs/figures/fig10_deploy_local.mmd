@@ -1,0 +1,9 @@
+%% Deployment Topology (Local)
+flowchart LR
+  Dev[Developer] --> Vite[Vite Dev Server]
+  Vite --> Browser[Web Browser]
+  Dev --> Replica[dfx Replica]
+  Replica --> Backend[VR_MarketPlace_backend]
+  Replica --> II[Internet Identity dev]
+  Browser --> Backend
+  Browser --> Vite
